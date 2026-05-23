@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Désembrouiller les Lettres – Trouver des Mots | WordUnscrambler.fr</title>
+<meta name="description" content="Désembrouillez vos lettres et trouvez tous les mots français possibles instantanément. Outil gratuit pour Scrabble, Wordle et mots croisés.">
+<meta name="keywords" content="désembrouiller lettres, mots avec ces lettres, anagramme français, aide scrabble, trouver mots">
+<link rel="canonical" href="https://wordunscrambler.fr/">
+<style>
+  :root {
+    --primary: #0055a4;
+    --primary-dark: #003d7a;
+    --accent: #ef4135;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: white; padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; }
+  header span { font-size: 0.85rem; opacity: 0.75; }
+  .hero { background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%); color: white; padding: 3rem 1.5rem 4rem; text-align: center; }
+  .hero h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.2; }
+  .hero p { font-size: 1.1rem; opacity: 0.9; max-width: 520px; margin: 0 auto 2rem; }
+  .search-box { background: white; border-radius: 16px; padding: 1.5rem; max-width: 600px; margin: 0 auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .input-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .input-row input { flex: 1; padding: 0.9rem 1.2rem; border: 2px solid var(--border); border-radius: 10px; font-size: 1.2rem; letter-spacing: 0.1em; text-transform: uppercase; outline: none; transition: border-color 0.2s; color: var(--text); }
+  .input-row input:focus { border-color: var(--primary); }
+  .input-row input::placeholder { text-transform: none; letter-spacing: 0; color: #aaa; font-size: 1rem; }
+  .btn-primary { padding: 0.9rem 1.8rem; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s; white-space: nowrap; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .options-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .options-row label { font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+  .options-row select { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; }
+  .filters-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .filters-row label { font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+  .filter-input { width: 65px; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .filter-input:focus { outline: none; border-color: var(--primary); }
+  main { max-width: 900px; margin: -2rem auto 0; padding: 0 1.5rem 4rem; position: relative; z-index: 1; }
+  #results-area { display: none; }
+  .results-header { background: var(--card); border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; }
+  .results-header h3 { font-size: 1.1rem; }
+  .results-header span { font-size: 0.9rem; color: var(--muted); }
+  .length-tabs { background: var(--card); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; white-space: nowrap; }
+  .tab-btn { display: inline-block; padding: 0.4rem 1rem; margin-right: 0.4rem; border: 2px solid var(--border); border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: white; color: var(--muted); transition: all 0.15s; }
+  .tab-btn.active, .tab-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+  .words-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.6rem; }
+  .word-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.95rem; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .word-card:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,85,164,0.15); }
+  .word-card .pts { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+  .section-title { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.75rem; padding-left: 0.25rem; }
+  .no-results { background: var(--card); border-radius: 12px; padding: 3rem; text-align: center; color: var(--muted); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .no-results h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
+  .info-section { background: var(--card); border-radius: 12px; padding: 2rem; margin-top: 3rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .info-section h2 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--primary); }
+  .info-section p { color: var(--muted); line-height: 1.7; margin-bottom: 0.75rem; }
+  .faq-item { margin-bottom: 1.5rem; }
+  .faq-item h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .faq-item p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+  .copy-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 0.7rem 1.5rem; border-radius: 30px; font-weight: 600; transition: transform 0.3s; z-index: 100; }
+  .copy-toast.show { transform: translateX(-50%) translateY(0); }
+  footer { background: var(--primary-dark); color: rgba(255,255,255,0.7); text-align: center; padding: 2rem; font-size: 0.85rem; }
+  footer a { color: rgba(255,255,255,0.9); text-decoration: none; }
+  @media(max-width:600px) { .hero h2 { font-size: 1.6rem; } .input-row { flex-direction: column; } .words-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔤 WordUnscrambler<span style="color:var(--accent)">.fr</span></h1>
+  <span>Désembrouiller les lettres en français</span>
+</header>
+
+<div class="hero">
+  <h2>Désembrouiller les Lettres en Français</h2>
+  <p>Entrez vos lettres mélangées et trouvez instantanément tous les mots français possibles.</p>
+  <div class="search-box">
+    <div class="input-row">
+      <input type="text" id="letterInput" placeholder="ex. ERMIN → MINER" maxlength="15" autocomplete="off" spellcheck="false">
+      <button class="btn-primary" onclick="unscramble()">Chercher</button>
+    </div>
+    <div class="options-row">
+      <label>Longueur: <select id="lengthFilter" onchange="filterByLength()">
+        <option value="all">Toutes</option>
+      </select></label>
+      <label><input type="checkbox" id="exactOnly"> Longueur exacte seulement</label>
+      <label style="margin-left:auto; color: var(--primary); font-weight:600;" id="wordCount"></label>
+    </div>
+    <div class="filters-row">
+      <label>Commence par: <input type="text" id="startsWith" class="filter-input" maxlength="3" placeholder="A…" autocomplete="off"></label>
+      <label>Se termine par: <input type="text" id="endsWith" class="filter-input" maxlength="3" placeholder="…E" autocomplete="off"></label>
+      <label>Contient: <input type="text" id="contains" class="filter-input" maxlength="3" placeholder="ST" autocomplete="off"></label>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div id="results-area">
+    <div class="results-header">
+      <h3 id="results-title">Résultats</h3>
+      <span id="results-meta"></span>
+    </div>
+    <div class="length-tabs" id="length-tabs"></div>
+    <div id="words-container"></div>
+  </div>
+  <div id="no-results" style="display:none" class="no-results">
+    <h3>Aucun mot trouvé</h3>
+    <p>Essayez d'autres lettres ou vérifiez l'orthographe.</p>
+  </div>
+
+  <div class="info-section">
+    <h2>Comment fonctionne le désembrouilleur de lettres ?</h2>
+    <p>Notre outil gratuit parcourt plus de 80 000 mots français en quelques millisecondes. Il suffit d'entrer vos lettres mélangées — l'algorithme teste toutes les combinaisons possibles et affiche tous les mots valides, triés par longueur et valeur au Scrabble.</p>
+    <p>Parfait pour le <strong>Scrabble</strong>, le <strong>Wordle en français</strong>, les <strong>mots croisés</strong>, les <strong>anagrammes</strong> et tous les jeux de mots en français.</p>
+    <div class="faq-item" style="margin-top:1.5rem">
+      <h3>À quoi sert le désembrouilleur ?</h3>
+      <p>Il vous aide à résoudre des anagrammes, à trouver des mots au Scrabble, à compléter des mots croisés et à gagner à tous vos jeux de lettres favoris.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Les accents sont-ils pris en charge ?</h3>
+      <p>Oui ! Vous pouvez saisir é, è, ê, à, â, ù, û, î, ô, ï, ë directement ou les remplacer par la lettre de base.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Combien de mots sont dans le dictionnaire ?</h3>
+      <p>Notre dictionnaire français contient plus de 80 000 mots courants du français standard.</p>
+    </div>
+  </div>
+</main>
+
+<div class="copy-toast" id="toast">✓ Copié !</div>
+
+<footer>
+  <p>© 2026 WordUnscrambler.fr – Désembrouiller les lettres en français</p>
+  <p style="margin-top:0.5rem"><a href="https://wordunscrambler.de">🇩🇪 Deutsch</a> &nbsp;|&nbsp; <a href="https://wordunscrambler.it">🇮🇹 Italiano</a></p>
+  <p style="margin-top:0.5rem;font-size:0.8rem"><a href="/privacy.html">Confidentialité</a></p>
+</footer>
+
+<script>
+const WORDS = `able abri acte aide aile aimer ainsi aire aise ajouter aile alba albe album algo
+aliment alle aller allez allons alors ami amie amer amour ample ancre ange animal
+anime ante apre apres arbre arc arme arrete art astre atome autre aveu avoir avons
+azur bain balle banc bande barbe barre beau belle bien bile bille blanc ble bleu
+bois bond bord bout branche bras bref brise brun buste cage calm camp cape carte
+cave cent chant char chat chaud chef cher ciel cime cinq cite clair clan clef
+coeur cela coin cola come cone core corps coude coup cour courbe crabe creme cri
+crise croit croix crue cube cure dans date demi dent deux dieu dire doigt dome
+duel dune eau echec eclair ecran effet efet ego egal elle elles elles elu embout
+emou empire en encore enfant entre espace este etat ete etude euro fable face
+fade fait fard faux fete feu fier fils fin fixe fleur fond font force foret fort
+fosse frais franc froid front fruit gai gale gamme garde geste glace globe gloire
+gout grade gras grave gris gros guerre guet guide guise haut herbe heure hier hiver
+homme horde huile hydre idee image inca indu inerte inner isle jardin joie joli
+jours jusque justice know lame large lien lieu ligne lire loin long lot lourd lune
+luxe mais main maison male manche mare matin maux mer mere miel mieux mode mol
+monde mont mou moue moule muet muon muse nage nain nare nation navet nid noel
+noir nord note novau nuit nuage onde onde onde onde ordre orge outil ouvrir page
+pain pale palme parc pari pave pays peau pied plus poil pois pont pose pour prise
+prix probe prou puree race rage rame rang rate rave reel reve ride rime rive robe
+roc role rose rose roux rude ruse sage sale sante saule savoir science sens serre
+seuil seve si signe sirop site soie soif sol sombre son sort sous spore ste stele
+suave suite sur table tache taie tale tige timon tissu toit tome tonde tonne tore
+toue tour toux trait treve trop trou tue type ulna union unir vague vale valet
+valise vapeur veine velo venu verre vers vide vie vieux vigne vil ville vin vitre
+vivre vogue voix voile volt abbe adieu agio agir agit aile aigle aimer aimer aines
+alaise alai aleas alee alert alex algue alibi alite alme aloes aloi alors alpe
+alpes alter alun alves alvin amande amant amarre ambre amene ament amibe amide
+amiel amis amine amour amure ancis ancien aneth aneve anier anise annee annule ante
+antes antis antre aoler aout apere apero apode appel apres aptee aquin arabe arabe
+arbre arcane ardeu ardis arene ariel arion arme arome arps arroi arsin ascot asile
+aspe assai atoca atouc auge augur avale avare averi avide avion avise avoir ayant
+baese bagne baies balet balsa bande barge baron barre basse batir bavure bazar
+becot berce besef betes bidel bigne biler birbe bisou blase bleme blond boeuf boite
+boive bosse bossu botte bouee bouet bouge boule breve bride brins brisa brise brome
+buche bulle calme capre carpe carte cause ceint celan cerat cerat cerise cerise
+chape charme chaux chien chine chose citee clame clane clore codex colle comite
+comme comte conif conte copie coq corde corme corse coude coupe coure couru crave
+crepe crete creux crime cruel cuite culte cumul cupre dabbe dague dame datte daube
+delai demie derbe derme desde desir detente devis dexte diche dieux diode diple
+diras disse dissi divan diver doile dome dorex doxie drape droit ducat duvet ebahi
+echue eclat ecoce ecran ecrit edite efface egout eider elide email emane emoti
+emule encre endos enfer epave epice epode epoxi epuree epure essor estime etape
+etape etext etier etire etude evade evite exige exile exode extra eylet facet facte
+fadee fagot faire faite faner fanum farce farder faste faune fautre faxer feber
+felon ferue feser festu fetal fetal fiche ficot filet fille filou fines fiole
+fiore firer fixee flane fleur floue foire folie folio forbe force forge forme forte
+forum fosse fouet frime front fuite fungi furax gaber gaffe galon garde garee garer
+garni gaude geant gelee gerer germe geste gibas gibet giron glane gomme gonze gorge
+gotee gouge grebe greco greve grife griot grise grive guise hadj halte harde harpe
+haute herpe heroe hexan horde idome ilion ilote imago imane image imbus imite index
+infra inuit irone istre ivete jaber jabot jacob jalon jante jarce jarre jaspe jayet
+jauge labbe lacet lacte ladie lafee lagon laite laize lance large laude laure lavet
+liard libet liede liege ligne lilas limer limon lince liner lippe litee liure livre
+lopin lorbe loupe lourd lucre luire lutte madre magie mague maile mamie maque maree
+melee menee merel merou messe meter miette mieur minot mitre mixte moite monade monde
+morel morne morue muser musée nappe napee natte navet nerve neveu nivee nober nolet
+nombe nomex nonef nopee noter novae novice novel noyer nutee obtus octet odeur odile
+oiste ojive olive ollave ombre ongle opale ophie opter orlet orpee ortie osier osser
+ouate ouche ouver ozone paffe paire palud panne parce patee paver peine pelée perce
+perle perme perpe perse piste pixel plage plane plate pleur plume plure poeté
+polex polie polir ponce ponts porce pores porme porte poule poulse pousse prede
+prele preve prise probe prose proue prove pseur pulse purge pusee rapee rappe
+rater rave rawer rebec rebus recit recul refus regal reste revue ribet riche rieur
+rinse rivet robot rogue roman rompe ronge roque rosee rotin roton roue roule route
+ruche ruine ruser rusee saber sabot salut saupe saumon saute savon scion secte seder
+seite semet septe serac serve sieur signe silex sinon sirop sobre soeur solee somme
+sonde sorte soule soupe souci spore suite taffe tanin tapon tapee tarce taupe taxee
+terce terne terre terse tigre timee tiree toise tolle torce totem touee toupe trame
+trape trave trime tripe trite trope trote troue truck tupee turne ulule urane urate
+utile uvale vafer vaghe vaine vaire value varve vecue velot velum velor venin vente
+venue veole verge verne verse verve vesge viare video vigie vigne viole viote virus
+vitre vivee volee volet vomet vomit vomer voule voure vulge`;
+
+const rawWords = WORDS.toLowerCase().replace(/[^a-zàâçéèêëîïôùûüœæ\s]/g,'').split(/\s+/).filter(w=>w.length>=2);
+const WORD_SET = [...new Set(rawWords)];
+
+const SCORES = {a:1,b:3,c:3,d:2,e:1,f:4,g:2,h:4,i:1,j:8,k:10,l:1,m:2,n:1,o:1,p:3,q:8,r:1,s:1,t:1,u:1,v:4,w:10,x:10,y:10,z:10,à:0,â:0,ç:0,é:0,è:0,ê:0,ë:0,î:0,ï:0,ô:0,ù:0,û:0,ü:0,œ:0,æ:0};
+
+function letterScore(word){ return [...word].reduce((s,c)=>s+(SCORES[c]||0),0); }
+
+function normalize(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+
+function canMake(word, letters) {
+  const avail = {};
+  for(const c of letters) avail[c]=(avail[c]||0)+1;
+  for(const c of word){
+    const n=normalize(c);
+    if(avail[n]){ avail[n]--; continue; }
+    if(avail[c]){ avail[c]--; continue; }
+    return false;
+  }
+  return true;
+}
+
+let allResults = {};
+
+function unscramble(){
+  const raw = document.getElementById('letterInput').value.toLowerCase().trim();
+  const letters = normalize(raw).replace(/[^a-z]/g,'');
+  if(!letters) return;
+  const exactOnly = document.getElementById('exactOnly').checked;
+  const sw = normalize(document.getElementById('startsWith').value).trim();
+  const ew = normalize(document.getElementById('endsWith').value).trim();
+  const cw = normalize(document.getElementById('contains').value).trim();
+  const found = WORD_SET.filter(w=>{
+    if(exactOnly && normalize(w).length !== letters.length) return false;
+    const wn = normalize(w);
+    if(sw && !wn.startsWith(sw)) return false;
+    if(ew && !wn.endsWith(ew)) return false;
+    if(cw && !wn.includes(cw)) return false;
+    return canMake(w, letters);
+  }).sort((a,b)=>b.length-a.length||letterScore(b)-letterScore(a));
+
+  allResults = {};
+  for(const w of found){ const k=normalize(w).length; if(!allResults[k])allResults[k]=[]; allResults[k].push(w); }
+
+  const lengths = Object.keys(allResults).map(Number).sort((a,b)=>b-a);
+  const lenFilter = document.getElementById('lengthFilter');
+  lenFilter.innerHTML='<option value="all">Toutes</option>';
+  lengths.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=`${l} lettres`; lenFilter.appendChild(o); });
+
+  document.getElementById('wordCount').textContent = found.length ? `${found.length} mots` : '';
+  renderResults(found, raw, lengths);
+}
+
+function renderResults(found, letters, lengths){
+  const area=document.getElementById('results-area');
+  const noRes=document.getElementById('no-results');
+  if(!found.length){ area.style.display='none'; noRes.style.display='block'; return; }
+  area.style.display='block'; noRes.style.display='none';
+  document.getElementById('results-title').textContent=`Mots de « ${letters.toUpperCase()} »`;
+  document.getElementById('results-meta').textContent=`${found.length} mots trouvés`;
+  const tabsEl=document.getElementById('length-tabs');
+  tabsEl.innerHTML='<span class="tab-btn active" onclick="switchTab(\'all\',this)">Tous</span>';
+  lengths.forEach(l=>{ tabsEl.innerHTML+=`<span class="tab-btn" onclick="switchTab(${l},this)">${l} lettres (${allResults[l].length})</span>`; });
+  renderWords(found);
+}
+
+function switchTab(len, el){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const toShow = len==='all' ? Object.values(allResults).flat() : allResults[len]||[];
+  renderWords(toShow);
+}
+
+function renderWords(words){
+  const container=document.getElementById('words-container');
+  if(!words.length){ container.innerHTML=''; return; }
+  const byLen={};
+  for(const w of words){ const k=normalize(w).length; if(!byLen[k])byLen[k]=[]; byLen[k].push(w); }
+  const lens=Object.keys(byLen).map(Number).sort((a,b)=>b-a);
+  let html='';
+  for(const l of lens){
+    html+=`<div class="section-title">Mots de ${l} lettres (${byLen[l].length})</div><div class="words-grid">`;
+    for(const w of byLen[l]){ html+=`<div class="word-card" onclick="copyWord('${w}')">${w.toUpperCase()}<br><span class="pts">${letterScore(w)} pts</span></div>`; }
+    html+='</div>';
+  }
+  container.innerHTML=html;
+}
+
+function filterByLength(){
+  const len=document.getElementById('lengthFilter').value;
+  const words=len==='all'?Object.values(allResults).flat():allResults[parseInt(len)]||[];
+  renderWords(words);
+}
+
+function copyWord(w){
+  navigator.clipboard?.writeText(w.toUpperCase()).catch(()=>{});
+  const t=document.getElementById('toast');
+  t.textContent=`✓ ${w.toUpperCase()} copié !`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+document.getElementById('letterInput').addEventListener('keydown',e=>{ if(e.key==='Enter') unscramble(); });
+</script>
+</body>
+</html>
